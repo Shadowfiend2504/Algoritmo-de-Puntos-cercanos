@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+    <title>Puntos Cercanos - Demo Flask</title>
+
+</head>
+<body>
+    <header>
+        <h1>Algoritmo de Puntos Cercanos</h1>
+        <p>Visualiza el par de puntos más cercanos en 2D</p>
+    </header>
+    <main class="container">
+        <div class="controls">
+            <form method="post" style="display:inline-block;">
+                <label for="num_points">Cantidad de puntos aleatorios:</label>
+                <input type="number" min="2" max="30" name="num_points" id="num_points" value="{{ num_points or 10 }}">
+                <button class="button" type="submit" name="action" value="random">Generar</button>
+            </form>
+        </div>
+        <div class="canvas-container">
+            <canvas id="plot" width="400" height="400"></canvas>
+        </div>
+        <div class="card">
+            <h2>Datos</h2>
+            <p>Puntos:</p>
+            <ul style="padding-left: 18px; color: #4a4e69; font-size: 1.01rem;">
+                {% for p in points %}
+                    <li>({{ "%.2f"|format(p[0]) }}, {{ "%.2f"|format(p[1]) }})</li>
+                {% endfor %}
+            </ul>
+            {% if closest %}
+                <p>Puntos más cercanos:<br>
+                    <b>({{ "%.2f"|format(closest[0][0]) }}, {{ "%.2f"|format(closest[0][1]) }})</b> y
+                    <b>({{ "%.2f"|format(closest[1][0]) }}, {{ "%.2f"|format(closest[1][1]) }})</b>
+                </p>
+                <p>Distancia: <b>{{ "%.4f"|format(closest[2]) }}</b></p>
+            {% endif %}
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2025 Algoritmo de Puntos Cercanos</p>
+    </footer>
+    <script>
+        // Datos desde Flask
+        const points = {{ points|tojson }};
+        const closest = {{ closest|tojson }};
+
+        // Calcula el rango de los puntos para ajustar el escalado dinámicamente
+        function getBounds(pts) {
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            for (const [x, y] of pts) {
+                if (x < minX) minX = x;
+                if (y < minY) minY = y;
+                if (x > maxX) maxX = x;
+                if (y > maxY) maxY = y;
+            }
+            return {minX, minY, maxX, maxY};
+        }
+
+        function draw() {
+            const c = document.getElementById('plot');
+            const ctx = c.getContext('2d');
+            ctx.clearRect(0, 0, c.width, c.height);
+
+            // Ajuste dinámico de escala y offset
+            const bounds = getBounds(points);
+            const padding = 30;
+            const plotWidth = c.width - 2 * padding;
+            const plotHeight = c.height - 2 * padding;
+            const rangeX = bounds.maxX - bounds.minX || 1;
+            const rangeY = bounds.maxY - bounds.minY || 1;
+            const scaleX = plotWidth / rangeX;
+            const scaleY = plotHeight / rangeY;
+
+            // Ejes
+            ctx.strokeStyle = "#ddd";
+            ctx.beginPath();
+            ctx.moveTo(padding, c.height - padding);
+            ctx.lineTo(c.width - padding, c.height - padding);
+            ctx.moveTo(padding, c.height - padding);
+            ctx.lineTo(padding, padding);
+            ctx.stroke();
+
+            // Función para transformar coordenadas de datos a canvas
+            function toCanvas([x, y]) {
+                return [
+                    padding + (x - bounds.minX) * scaleX,
+                    c.height - (padding + (y - bounds.minY) * scaleY)
+                ];
+            }
+
+            // Puntos
+            for (const [x, y] of points) {
+                const [cx, cy] = toCanvas([x, y]);
+                ctx.beginPath();
+                ctx.arc(cx, cy, 7, 0, 2 * Math.PI);
+                ctx.fillStyle = "#35424a";
+                ctx.fill();
+            }
+
+            // Par más cercano
+            if (closest) {
+                const [a, b] = [toCanvas(closest[0]), toCanvas(closest[1])];
+                ctx.beginPath();
+                ctx.moveTo(a[0], a[1]);
+                ctx.lineTo(b[0], b[1]);
+                ctx.strokeStyle = "#e74c3c";
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                // Resalta los puntos
+                for (const [cx, cy] of [a, b]) {
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 10, 0, 2 * Math.PI);
+                    ctx.strokeStyle = "#e74c3c";
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+            }
+        }
+        draw();
+    </script>
+</body>
+</html>
