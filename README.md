@@ -1,8 +1,8 @@
-# My Python HTML App
+# Algoritmo de Puntos Más Cercanos - Demo Flask
 
-This project is a simple web application built using Flask, HTML, and CSS. It serves as a basic template for creating visually appealing web applications.
+Este proyecto es una aplicación web sencilla desarrollada con Flask, HTML y CSS. Permite visualizar de forma interactiva el algoritmo de búsqueda del par de puntos más cercanos en un plano 2D, mostrando los resultados tanto en una lista como gráficamente.
 
-## Project Structure
+## Estructura del Proyecto
 
 ```
 my-python-html-app
@@ -14,35 +14,31 @@ my-python-html-app
 └── README.md
 ```
 
-## Requirements
+## Requisitos
 
 - Python 3.x
 - Flask
 
-## Setup Instructions
+## Instrucciones de instalación
 
-1. Clone the repository:
+1. Clona el repositorio:
    ```
-   git clone <repository-url>
+   git clone <url-del-repositorio>
    cd my-python-html-app
    ```
 
-2. Install the required packages:
+2. Instala las dependencias necesarias:
    ```
    pip install Flask
    ```
 
-3. Run the application:
+3. Ejecuta la aplicación:
    ```
    python app.py
    ```
 
-4. Open your web browser and go to `http://127.0.0.1:5000/` to view the application.
+4. Abre tu navegador y accede a `http://127.0.0.1:5000/` para ver la aplicación.
 
-## Usage
+## Uso
 
-This application serves a simple HTML page styled with CSS. You can modify the `index.html` and `style.css` files to customize the content and appearance of your web application.
-
-## License
-
-This project is licensed under the MIT License.
+La aplicación permite generar puntos aleatorios y visualizar el par de puntos más cercanos, junto con la distancia entre ellos. Puedes personalizar el contenido y la apariencia modificando los archivos `index.html` y `style.css`.
