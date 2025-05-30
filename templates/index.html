@@ -92,6 +92,20 @@
                 ];
             }
 
+            // Conecta todos los puntos con líneas grises
+            ctx.strokeStyle = "#bbb";
+            ctx.lineWidth = 1;
+            for (let i = 0; i < points.length; i++) {
+                for (let j = i + 1; j < points.length; j++) {
+                    const a = toCanvas(points[i]);
+                    const b = toCanvas(points[j]);
+                    ctx.beginPath();
+                    ctx.moveTo(a[0], a[1]);
+                    ctx.lineTo(b[0], b[1]);
+                    ctx.stroke();
+                }
+            }
+
             // Puntos
             for (const [x, y] of points) {
                 const [cx, cy] = toCanvas([x, y]);
@@ -101,7 +115,7 @@
                 ctx.fill();
             }
 
-            // Par más cercano
+            // Par más cercano en rojo
             if (closest) {
                 const [a, b] = [toCanvas(closest[0]), toCanvas(closest[1])];
                 ctx.beginPath();
