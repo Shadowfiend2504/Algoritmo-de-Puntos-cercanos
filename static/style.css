@@ -146,3 +146,41 @@ footer {
     border-top-left-radius: 24px;
     border-top-right-radius: 24px;
 }
+
+.algos-cards {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin: 32px auto 0 auto;
+    max-width: 900px;
+    flex-wrap: wrap;
+}
+.algo-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(34,34,59,0.10);
+    padding: 18px 22px;
+    min-width: 220px;
+    max-width: 270px;
+    flex: 1 1 220px;
+    text-align: center;
+}
+.algo-card h3 {
+    margin-top: 0;
+    color: #22223b;
+    font-size: 1.13rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+.algo-card p {
+    color: #4a4e69;
+    font-size: 1.01rem;
+    margin: 10px 0 0 0;
+}
+.algo-card canvas {
+    display: block;
+    margin: 16px auto 0 auto;
+    background: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(34,34,59,0.07);
+}

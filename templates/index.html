@@ -12,6 +12,36 @@
         <h1>Algoritmo de Puntos Cercanos</h1>
         <p>Visualiza el par de puntos más cercanos en 2D</p>
     </header>
+
+    <div class="algos-cards">
+        <div class="algo-card">
+            <h3>Fuerza Bruta</h3>
+            <p>
+                Compara cada punto con todos los demás.<br>
+                Complejidad: <b>O(n²)</b>.<br>
+                Fácil de programar, pero lento para muchos puntos.
+            </p>
+            <canvas id="canvas-brute" width="220" height="220"></canvas>
+        </div>
+        <div class="algo-card">
+            <h3>Divide y Vencerás</h3>
+            <p>
+                Organiza los datos para evitar comparaciones innecesarias.<br>
+                Complejidad: <b>O(n log n)</b>.<br>
+                Más eficiente, pero requiere una implementación más compleja.
+            </p>
+            <canvas id="canvas-divide" width="220" height="220"></canvas>
+        </div>
+        <div class="algo-card">
+            <h3>K-D Tree</h3>
+            <p>
+                Usa estructuras espaciales tipo árbol para buscar vecinos cercanos.<br>
+                Complejidad promedio: <b>O(log n)</b> por búsqueda.<br>
+                Muy rápido para grandes conjuntos, pero más avanzado de implementar.
+            </p>
+            <canvas id="canvas-kdtree" width="220" height="220"></canvas>
+        </div>
+    </div>
     <main class="container">
         <div class="controls">
             <form method="post" style="display:inline-block;">
@@ -39,102 +69,262 @@
                 <p>Distancia: <b>{{ "%.4f"|format(closest[2]) }}</b></p>
             {% endif %}
         </div>
+        <div class="card">
+            <h2>Resultados de los Algoritmos</h2>
+            <ul style="padding-left: 18px; color: #4a4e69; font-size: 1.01rem;">
+                <li>
+                    <b>Fuerza Bruta:</b><br>
+                    {% if closest_brute %}
+                        Puntos: <b>({{ "%.2f"|format(closest_brute[0][0]) }}, {{ "%.2f"|format(closest_brute[0][1]) }})</b> y
+                        <b>({{ "%.2f"|format(closest_brute[1][0]) }}, {{ "%.2f"|format(closest_brute[1][1]) }})</b><br>
+                        Distancia: <b>{{ "%.4f"|format(closest_brute[2]) }}</b>
+                    {% endif %}
+                </li>
+                <li>
+                    <b>Divide y Vencerás:</b><br>
+                    {% if closest_divide %}
+                        Puntos: <b>({{ "%.2f"|format(closest_divide[0][0]) }}, {{ "%.2f"|format(closest_divide[0][1]) }})</b> y
+                        <b>({{ "%.2f"|format(closest_divide[1][0]) }}, {{ "%.2f"|format(closest_divide[1][1]) }})</b><br>
+                        Distancia: <b>{{ "%.4f"|format(closest_divide[2]) }}</b>
+                    {% endif %}
+                </li>
+                <li>
+                    <b>K-D Tree:</b><br>
+                    {% if closest_kdtree %}
+                        Puntos: <b>({{ "%.2f"|format(closest_kdtree[0][0]) }}, {{ "%.2f"|format(closest_kdtree[0][1]) }})</b> y
+                        <b>({{ "%.2f"|format(closest_kdtree[1][0]) }}, {{ "%.2f"|format(closest_kdtree[1][1]) }})</b><br>
+                        Distancia: <b>{{ "%.4f"|format(closest_kdtree[2]) }}</b>
+                    {% endif %}
+                </li>
+            </ul>
+        </div>
     </main>
     <footer>
         <p>&copy; 2025 Algoritmo de Puntos Cercanos</p>
     </footer>
     <script>
-        // Datos desde Flask
-        const points = {{ points|tojson }};
-        const closest = {{ closest|tojson }};
+const points = {{ points|tojson }};
+const closest_brute = {{ closest_brute|tojson }};
+const closest_divide = {{ closest_divide|tojson }};
+const closest_kdtree = {{ closest_kdtree|tojson }};
 
-        // Calcula el rango de los puntos para ajustar el escalado dinámicamente
-        function getBounds(pts) {
-            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-            for (const [x, y] of pts) {
-                if (x < minX) minX = x;
-                if (y < minY) minY = y;
-                if (x > maxX) maxX = x;
-                if (y > maxY) maxY = y;
-            }
-            return {minX, minY, maxX, maxY};
-        }
+// Utilidad para escalar puntos al canvas
+function getScaler(pts, size=220, padding=18) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const [x, y] of pts) {
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+    }
+    const rangeX = maxX - minX || 1;
+    const rangeY = maxY - minY || 1;
+    const scaleX = (size - 2 * padding) / rangeX;
+    const scaleY = (size - 2 * padding) / rangeY;
+    return ([x, y]) => [
+        padding + (x - minX) * scaleX,
+        size - (padding + (y - minY) * scaleY)
+    ];
+}
 
-        function draw() {
-            const c = document.getElementById('plot');
-            const ctx = c.getContext('2d');
-            ctx.clearRect(0, 0, c.width, c.height);
-
-            // Ajuste dinámico de escala y offset
-            const bounds = getBounds(points);
-            const padding = 30;
-            const plotWidth = c.width - 2 * padding;
-            const plotHeight = c.height - 2 * padding;
-            const rangeX = bounds.maxX - bounds.minX || 1;
-            const rangeY = bounds.maxY - bounds.minY || 1;
-            const scaleX = plotWidth / rangeX;
-            const scaleY = plotHeight / rangeY;
-
-            // Ejes
-            ctx.strokeStyle = "#ddd";
+// Fuerza Bruta animado
+function animateBrute() {
+    const canvas = document.getElementById('canvas-brute');
+    const ctx = canvas.getContext('2d');
+    const toCanvas = getScaler(points, canvas.width, 18);
+    let i = 0, j = 1;
+    let minDist = Infinity, minPair = null;
+    function drawFrame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Dibuja todos los puntos
+        for (const p of points) {
+            const [cx, cy] = toCanvas(p);
             ctx.beginPath();
-            ctx.moveTo(padding, c.height - padding);
-            ctx.lineTo(c.width - padding, c.height - padding);
-            ctx.moveTo(padding, c.height - padding);
-            ctx.lineTo(padding, padding);
+            ctx.arc(cx, cy, 7, 0, 2 * Math.PI);
+            ctx.fillStyle = "#35424a";
+            ctx.fill();
+        }
+        // Dibuja la comparación actual
+        if (i < points.length) {
+            const a = toCanvas(points[i]);
+            const b = toCanvas(points[j]);
+            ctx.beginPath();
+            ctx.moveTo(a[0], a[1]);
+            ctx.lineTo(b[0], b[1]);
+            ctx.strokeStyle = "#3498db";
+            ctx.lineWidth = 2;
             ctx.stroke();
-
-            // Función para transformar coordenadas de datos a canvas
-            function toCanvas([x, y]) {
-                return [
-                    padding + (x - bounds.minX) * scaleX,
-                    c.height - (padding + (y - bounds.minY) * scaleY)
-                ];
+            // Si es el mínimo hasta ahora, resalta
+            const dist = Math.hypot(points[i][0] - points[j][0], points[i][1] - points[j][1]);
+            if (dist < minDist) {
+                minDist = dist;
+                minPair = [a, b];
             }
-
-            // Conecta todos los puntos con líneas grises
-            ctx.strokeStyle = "#bbb";
-            ctx.lineWidth = 1;
-            for (let i = 0; i < points.length; i++) {
-                for (let j = i + 1; j < points.length; j++) {
-                    const a = toCanvas(points[i]);
-                    const b = toCanvas(points[j]);
-                    ctx.beginPath();
-                    ctx.moveTo(a[0], a[1]);
-                    ctx.lineTo(b[0], b[1]);
-                    ctx.stroke();
-                }
+            j++;
+            if (j >= points.length) {
+                i++;
+                j = i + 1;
             }
-
-            // Puntos
-            for (const [x, y] of points) {
-                const [cx, cy] = toCanvas([x, y]);
+            setTimeout(drawFrame, 350); // Velocidad de animación
+        } else if (minPair) {
+            // Dibuja el par más cercano en rojo
+            ctx.beginPath();
+            ctx.moveTo(minPair[0][0], minPair[0][1]);
+            ctx.lineTo(minPair[1][0], minPair[1][1]);
+            ctx.strokeStyle = "#e74c3c";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            for (const [cx, cy] of minPair) {
                 ctx.beginPath();
-                ctx.arc(cx, cy, 7, 0, 2 * Math.PI);
-                ctx.fillStyle = "#35424a";
-                ctx.fill();
-            }
-
-            // Par más cercano en rojo
-            if (closest) {
-                const [a, b] = [toCanvas(closest[0]), toCanvas(closest[1])];
-                ctx.beginPath();
-                ctx.moveTo(a[0], a[1]);
-                ctx.lineTo(b[0], b[1]);
+                ctx.arc(cx, cy, 10, 0, 2 * Math.PI);
                 ctx.strokeStyle = "#e74c3c";
                 ctx.lineWidth = 3;
                 ctx.stroke();
-                // Resalta los puntos
-                for (const [cx, cy] of [a, b]) {
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, 10, 0, 2 * Math.PI);
-                    ctx.strokeStyle = "#e74c3c";
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
-                }
             }
         }
-        draw();
-    </script>
+    }
+    drawFrame();
+}
+
+// Divide y vencerás (simulación visual)
+function animateDivide() {
+    const canvas = document.getElementById('canvas-divide');
+    const ctx = canvas.getContext('2d');
+    const toCanvas = getScaler(points, canvas.width, 18);
+    let step = 0;
+    function drawFrame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (const p of points) {
+            const [cx, cy] = toCanvas(p);
+            ctx.beginPath();
+            ctx.arc(cx, cy, 7, 0, 2 * Math.PI);
+            ctx.fillStyle = "#35424a";
+            ctx.fill();
+        }
+        if (step === 0) {
+            const xs = points.map(p => p[0]).sort((a, b) => a - b);
+            const midX = (xs[Math.floor(xs.length / 2)] + xs[Math.ceil(xs.length / 2)]) / 2;
+            const [xCanvas] = toCanvas([midX, 0]);
+            ctx.beginPath();
+            ctx.moveTo(xCanvas, 0);
+            ctx.lineTo(xCanvas, canvas.height);
+            ctx.strokeStyle = "#8e44ad";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            step++;
+            setTimeout(drawFrame, 1500); // <-- más lento
+        } else if (step === 1) {
+            const [a, b] = [toCanvas(closest_divide[0]), toCanvas(closest_divide[1])];
+            ctx.beginPath();
+            ctx.moveTo(a[0], a[1]);
+            ctx.lineTo(b[0], b[1]);
+            ctx.strokeStyle = "#e67e22";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            for (const [cx, cy] of [a, b]) {
+                ctx.beginPath();
+                ctx.arc(cx, cy, 10, 0, 2 * Math.PI);
+                ctx.strokeStyle = "#e67e22";
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+        }
+    }
+    drawFrame();
+}
+
+// K-D Tree (simulación visual)
+function animateKDTree() {
+    const canvas = document.getElementById('canvas-kdtree');
+    const ctx = canvas.getContext('2d');
+    const toCanvas = getScaler(points, canvas.width, 18);
+    let step = 0;
+    function drawFrame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (const p of points) {
+            const [cx, cy] = toCanvas(p);
+            ctx.beginPath();
+            ctx.arc(cx, cy, 7, 0, 2 * Math.PI);
+            ctx.fillStyle = "#35424a";
+            ctx.fill();
+        }
+        if (step === 0) {
+            const [cx, cy] = toCanvas(closest_kdtree[0]);
+            ctx.beginPath();
+            ctx.arc(cx, cy, 40, 0, 2 * Math.PI);
+            ctx.strokeStyle = "#16a085";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 6]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            step++;
+            setTimeout(drawFrame, 1500); // <-- más lento
+        } else if (step === 1) {
+            const [a, b] = [toCanvas(closest_kdtree[0]), toCanvas(closest_kdtree[1])];
+            ctx.beginPath();
+            ctx.moveTo(a[0], a[1]);
+            ctx.lineTo(b[0], b[1]);
+            ctx.strokeStyle = "#16a085";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            for (const [cx, cy] of [a, b]) {
+                ctx.beginPath();
+                ctx.arc(cx, cy, 10, 0, 2 * Math.PI);
+                ctx.strokeStyle = "#16a085";
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+        }
+    }
+    drawFrame();
+}
+
+// Dibuja el gráfico estático
+function drawPlot() {
+    const canvas = document.getElementById('plot');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const toCanvas = getScaler(points, canvas.width, 30);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Dibuja todos los puntos
+    for (const p of points) {
+        const [cx, cy] = toCanvas(p);
+        ctx.beginPath();
+        ctx.arc(cx, cy, 8, 0, 2 * Math.PI);
+        ctx.fillStyle = "#35424a";
+        ctx.fill();
+    }
+
+    // Dibuja el par más cercano (por fuerza bruta, puedes cambiarlo)
+    if (closest_brute) {
+        const [a, b] = [toCanvas(closest_brute[0]), toCanvas(closest_brute[1])];
+        ctx.beginPath();
+        ctx.moveTo(a[0], a[1]);
+        ctx.lineTo(b[0], b[1]);
+        ctx.strokeStyle = "#e74c3c";
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Resalta los puntos del par más cercano
+        for (const [cx, cy] of [a, b]) {
+            ctx.beginPath();
+            ctx.arc(cx, cy, 12, 0, 2 * Math.PI);
+            ctx.strokeStyle = "#e74c3c";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+    }
+}
+
+// Llama a la función al cargar la página
+drawPlot();
+
+// Ejecuta las animaciones al cargar
+animateBrute();
+animateDivide();
+animateKDTree();
+</script>
 </body>
 </html>
