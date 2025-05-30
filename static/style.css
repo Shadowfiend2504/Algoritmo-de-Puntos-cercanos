@@ -176,6 +176,7 @@ footer {
     color: #4a4e69;
     font-size: 1.01rem;
     margin: 10px 0 0 0;
+    text-align: left; /* Justifica el texto */
 }
 .algo-card canvas {
     display: block;

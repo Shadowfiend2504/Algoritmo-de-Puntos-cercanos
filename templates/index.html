@@ -21,6 +21,7 @@
                 Complejidad: <b>O(n²)</b>.<br>
                 Fácil de programar, pero lento para muchos puntos.
             </p>
+            <!-- Canvas debe ir al final del div.algo-card -->
             <canvas id="canvas-brute" width="220" height="220"></canvas>
         </div>
         <div class="algo-card">
@@ -30,6 +31,7 @@
                 Complejidad: <b>O(n log n)</b>.<br>
                 Más eficiente, pero requiere una implementación más compleja.
             </p>
+            <!-- Canvas debe ir al final del div.algo-card -->
             <canvas id="canvas-divide" width="220" height="220"></canvas>
         </div>
         <div class="algo-card">
@@ -39,6 +41,7 @@
                 Complejidad promedio: <b>O(log n)</b> por búsqueda.<br>
                 Muy rápido para grandes conjuntos, pero más avanzado de implementar.
             </p>
+            <!-- Canvas debe ir al final del div.algo-card -->
             <canvas id="canvas-kdtree" width="220" height="220"></canvas>
         </div>
     </div>
@@ -56,11 +59,23 @@
         <div class="card">
             <h2>Datos</h2>
             <p>Puntos:</p>
-            <ul style="padding-left: 18px; color: #4a4e69; font-size: 1.01rem;">
-                {% for p in points %}
-                    <li>({{ "%.2f"|format(p[0]) }}, {{ "%.2f"|format(p[1]) }})</li>
-                {% endfor %}
-            </ul>
+            <div style="display: flex; gap: 18px;">
+                <ul style="padding-left: 18px; color: #4a4e69; font-size: 1.01rem; flex:1;">
+                    {% for p in points[:10] %}
+                        <li>({{ "%.2f"|format(p[0]) }}, {{ "%.2f"|format(p[1]) }})</li>
+                    {% endfor %}
+                </ul>
+                <ul style="padding-left: 18px; color: #4a4e69; font-size: 1.01rem; flex:1;">
+                    {% for p in points[10:20] %}
+                        <li>({{ "%.2f"|format(p[0]) }}, {{ "%.2f"|format(p[1]) }})</li>
+                    {% endfor %}
+                </ul>
+                <ul style="padding-left: 18px; color: #4a4e69; font-size: 1.01rem; flex:1;">
+                    {% for p in points[20:30] %}
+                        <li>({{ "%.2f"|format(p[0]) }}, {{ "%.2f"|format(p[1]) }})</li>
+                    {% endfor %}
+                </ul>
+            </div>
             {% if closest %}
                 <p>Puntos más cercanos:<br>
                     <b>({{ "%.2f"|format(closest[0][0]) }}, {{ "%.2f"|format(closest[0][1]) }})</b> y
@@ -71,32 +86,44 @@
         </div>
         <div class="card">
             <h2>Resultados de los Algoritmos</h2>
-            <ul style="padding-left: 18px; color: #4a4e69; font-size: 1.01rem;">
-                <li>
+            <div style="display: flex; gap: 18px; justify-content: space-between;">
+                <div style="flex:1; border-right: 1px solid #eee; padding-right: 12px;">
                     <b>Fuerza Bruta:</b><br>
                     {% if closest_brute %}
-                        Puntos: <b>({{ "%.2f"|format(closest_brute[0][0]) }}, {{ "%.2f"|format(closest_brute[0][1]) }})</b> y
+                        Puntos:<br>
+                        <b>({{ "%.2f"|format(closest_brute[0][0]) }}, {{ "%.2f"|format(closest_brute[0][1]) }})</b> y
                         <b>({{ "%.2f"|format(closest_brute[1][0]) }}, {{ "%.2f"|format(closest_brute[1][1]) }})</b><br>
-                        Distancia: <b>{{ "%.4f"|format(closest_brute[2]) }}</b>
+                        Distancia: <b>{{ "%.4f"|format(closest_brute[2]) }}</b><br>
+                        {% if time_brute is defined %}
+                            <span style="color:#888;">Tiempo: <b>{{ "%.2f"|format(time_brute*1000) }} ms</b></span>
+                        {% endif %}
                     {% endif %}
-                </li>
-                <li>
+                </div>
+                <div style="flex:1; border-right: 1px solid #eee; padding: 0 12px;">
                     <b>Divide y Vencerás:</b><br>
                     {% if closest_divide %}
-                        Puntos: <b>({{ "%.2f"|format(closest_divide[0][0]) }}, {{ "%.2f"|format(closest_divide[0][1]) }})</b> y
+                        Puntos:<br>
+                        <b>({{ "%.2f"|format(closest_divide[0][0]) }}, {{ "%.2f"|format(closest_divide[0][1]) }})</b> y
                         <b>({{ "%.2f"|format(closest_divide[1][0]) }}, {{ "%.2f"|format(closest_divide[1][1]) }})</b><br>
-                        Distancia: <b>{{ "%.4f"|format(closest_divide[2]) }}</b>
+                        Distancia: <b>{{ "%.4f"|format(closest_divide[2]) }}</b><br>
+                        {% if time_divide is defined %}
+                            <span style="color:#888;">Tiempo: <b>{{ "%.2f"|format(time_divide*1000) }} ms</b></span>
+                        {% endif %}
                     {% endif %}
-                </li>
-                <li>
+                </div>
+                <div style="flex:1; padding-left: 12px;">
                     <b>K-D Tree:</b><br>
                     {% if closest_kdtree %}
-                        Puntos: <b>({{ "%.2f"|format(closest_kdtree[0][0]) }}, {{ "%.2f"|format(closest_kdtree[0][1]) }})</b> y
+                        Puntos:<br>
+                        <b>({{ "%.2f"|format(closest_kdtree[0][0]) }}, {{ "%.2f"|format(closest_kdtree[0][1]) }})</b> y
                         <b>({{ "%.2f"|format(closest_kdtree[1][0]) }}, {{ "%.2f"|format(closest_kdtree[1][1]) }})</b><br>
-                        Distancia: <b>{{ "%.4f"|format(closest_kdtree[2]) }}</b>
+                        Distancia: <b>{{ "%.4f"|format(closest_kdtree[2]) }}</b><br>
+                        {% if time_kdtree is defined %}
+                            <span style="color:#888;">Tiempo: <b>{{ "%.2f"|format(time_kdtree*1000) }} ms</b></span>
+                        {% endif %}
                     {% endif %}
-                </li>
-            </ul>
+                </div>
+            </div>
         </div>
     </main>
     <footer>
@@ -134,6 +161,8 @@ function animateBrute() {
     const toCanvas = getScaler(points, canvas.width, 18);
     let i = 0, j = 1;
     let minDist = Infinity, minPair = null;
+    let finished = false;
+
     function drawFrame() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         // Dibuja todos los puntos
@@ -144,18 +173,22 @@ function animateBrute() {
             ctx.fillStyle = "#35424a";
             ctx.fill();
         }
-        // Dibuja la comparación actual
-        if (i < points.length) {
-            const a = toCanvas(points[i]);
-            const b = toCanvas(points[j]);
+
+        if (!finished && i < points.length) {
+            // Dibuja la comparación actual
+            const a = points[i];
+            const b = points[j];
+            const aCanvas = toCanvas(a);
+            const bCanvas = toCanvas(b);
             ctx.beginPath();
-            ctx.moveTo(a[0], a[1]);
-            ctx.lineTo(b[0], b[1]);
+            ctx.moveTo(aCanvas[0], aCanvas[1]);
+            ctx.lineTo(bCanvas[0], bCanvas[1]);
             ctx.strokeStyle = "#3498db";
             ctx.lineWidth = 2;
             ctx.stroke();
-            // Si es el mínimo hasta ahora, resalta
-            const dist = Math.hypot(points[i][0] - points[j][0], points[i][1] - points[j][1]);
+
+            // Actualiza el mínimo si corresponde
+            const dist = Math.hypot(a[0] - b[0], a[1] - b[1]);
             if (dist < minDist) {
                 minDist = dist;
                 minPair = [a, b];
@@ -165,18 +198,25 @@ function animateBrute() {
                 i++;
                 j = i + 1;
             }
-            setTimeout(drawFrame, 350); // Velocidad de animación
-        } else if (minPair) {
-            // Dibuja el par más cercano en rojo
+            if (i < points.length) {
+                setTimeout(drawFrame, 350);
+            } else {
+                finished = true;
+                setTimeout(drawFrame, 350); // Llama una vez más para mostrar el resultado final
+            }
+        } else if (finished && minPair) {
+            // Solo al final: dibuja el par más cercano
+            const [a, b] = [toCanvas(minPair[0]), toCanvas(minPair[1])];
             ctx.beginPath();
-            ctx.moveTo(minPair[0][0], minPair[0][1]);
-            ctx.lineTo(minPair[1][0], minPair[1][1]);
+            ctx.moveTo(a[0], a[1]);
+            ctx.lineTo(b[0], b[1]);
             ctx.strokeStyle = "#e74c3c";
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 4;
             ctx.stroke();
-            for (const [cx, cy] of minPair) {
+
+            for (const [cx, cy] of [a, b]) {
                 ctx.beginPath();
-                ctx.arc(cx, cy, 10, 0, 2 * Math.PI);
+                ctx.arc(cx, cy, 12, 0, 2 * Math.PI);
                 ctx.strokeStyle = "#e74c3c";
                 ctx.lineWidth = 3;
                 ctx.stroke();
@@ -212,7 +252,7 @@ function animateDivide() {
             ctx.lineWidth = 2;
             ctx.stroke();
             step++;
-            setTimeout(drawFrame, 1500); // <-- más lento
+            setTimeout(drawFrame, 20000); // <-- más lento
         } else if (step === 1) {
             const [a, b] = [toCanvas(closest_divide[0]), toCanvas(closest_divide[1])];
             ctx.beginPath();
@@ -258,7 +298,7 @@ function animateKDTree() {
             ctx.stroke();
             ctx.setLineDash([]);
             step++;
-            setTimeout(drawFrame, 1500); // <-- más lento
+            setTimeout(drawFrame, 20000); // <-- más lento
         } else if (step === 1) {
             const [a, b] = [toCanvas(closest_kdtree[0]), toCanvas(closest_kdtree[1])];
             ctx.beginPath();
@@ -287,6 +327,20 @@ function drawPlot() {
     const toCanvas = getScaler(points, canvas.width, 30);
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Dibuja todas las uniones posibles entre los puntos
+    ctx.strokeStyle = "#bbb";
+    ctx.lineWidth = 1;
+    for (let i = 0; i < points.length; i++) {
+        for (let j = i + 1; j < points.length; j++) {
+            const a = toCanvas(points[i]);
+            const b = toCanvas(points[j]);
+            ctx.beginPath();
+            ctx.moveTo(a[0], a[1]);
+            ctx.lineTo(b[0], b[1]);
+            ctx.stroke();
+        }
+    }
 
     // Dibuja todos los puntos
     for (const p of points) {

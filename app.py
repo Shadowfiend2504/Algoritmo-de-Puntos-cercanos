@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 import math
 import random
+import time
 
 app = Flask(__name__)
 
@@ -71,15 +72,30 @@ def home():
             except Exception:
                 num_points = 10
     points = [(random.uniform(1, 10), random.uniform(1, 10)) for _ in range(num_points)]
+    t0 = time.perf_counter()
     closest_brute = fuerza_bruta(points)
+    t1 = time.perf_counter()
+    time_brute = t1 - t0
+
+    t0 = time.perf_counter()
     closest_divide = divide_y_venceras(points)
+    t1 = time.perf_counter()
+    time_divide = t1 - t0
+
+    t0 = time.perf_counter()
     closest_kdtree = kd_tree_method(points)
+    t1 = time.perf_counter()
+    time_kdtree = t1 - t0
+
     return render_template(
         'index.html',
         points=points,
         closest_brute=closest_brute,
         closest_divide=closest_divide,
         closest_kdtree=closest_kdtree,
+        time_brute=time_brute,
+        time_divide=time_divide,
+        time_kdtree=time_kdtree,
         num_points=num_points
     )
 
